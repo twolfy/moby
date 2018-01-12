@@ -116,8 +116,19 @@ func newURLRemote(url string, dockerfilePath string, progressReader func(in io.R
 	}
 }
 
+// return the path + filename of the dockerignore file given via ENV `DOCKER_DOCKERIGNORE` or
+// on default - `.dockerignore`
+func getDockerignoreFile() string {
+	dockerignoreFile, ok := os.LookupEnv("DOCKER_DOCKERIGNORE")
+	if ok == false {
+		dockerignoreFile = ".dockerignore"
+	}
+	return dockerignoreFile
+}
+
 func removeDockerfile(c modifiableContext, filesToRemove ...string) error {
-	f, err := openAt(c, ".dockerignore")
+	dockerignoreFilename := getDockerignoreFile()
+	f, err := openAt(c, dockerignoreFilename)
 	// Note that a missing .dockerignore file isn't treated as an error
 	switch {
 	case os.IsNotExist(err):
